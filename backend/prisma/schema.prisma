@@ -61,9 +61,12 @@ model Booking {
   service       Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict) // Prevent service deletion if bookings exist
   staff         Staff         @relation(fields: [staffId], references: [id], onDelete: Restrict) // Prevent staff deletion if bookings exist
 
-  // Composite index for staff availability queries
+  // Composite index for staff availability queries - speeds up filtering bookings by staff and time range
   @@index([staffId, startAt, endAt])
+  // Index for quick service filtering - helps find all bookings for a specific service
   @@index([serviceId])
+  // Index for status queries - optimizes filtering by booking status (PENDING, CONFIRMED, etc.)
   @@index([status])
+  // Index for time-based queries - speeds up finding bookings within date ranges
   @@index([startAt])
 }
