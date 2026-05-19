@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Booking status enumeration
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique // Unique email for login
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Service {
+  id              String    @id @default(cuid())
+  name            String    @unique // Service must be unique
+  description     String?
+  priceBdt        Int // Price in BDT currency
+  durationMinutes Int // Service duration in minutes
+  isActive        Boolean   @default(true) // Soft flag for active services
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  bookings        Booking[] // One-to-many relation with Booking
+}
+
+model Staff {
+  id        String    @id @default(cuid())
+  name      String
+  phone     String
+  email     String?   @unique // Optional email with unique constraint
+  isActive  Boolean   @default(true) // Soft flag for active staff
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[] // One-to-many relation with Booking
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  customerName  String
+  customerPhone String
+  customerNotes String?
+  serviceId     String // Foreign key to Service
+  staffId       String // Foreign key to Staff
+  startAt       DateTime // Booking start time
+  endAt         DateTime // Booking end time
+  status        BookingStatus @default(PENDING) // Booking status tracking
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  service       Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict) // Prevent service deletion if bookings exist
+  staff         Staff         @relation(fields: [staffId], references: [id], onDelete: Restrict) // Prevent staff deletion if bookings exist
+
+  // Composite index for staff availability queries
+  @@index([staffId, startAt, endAt])
+  @@index([serviceId])
+  @@index([status])
+  @@index([startAt])
+}
