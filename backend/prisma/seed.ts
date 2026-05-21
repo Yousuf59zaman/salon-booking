@@ -1,10 +1,19 @@
 // Import bcryptjs for secure password hashing before storing in database
 import { hash } from 'bcryptjs';
+import { PrismaPg } from '@prisma/adapter-pg';
 // Import custom generated Prisma client to interact with database schema
 import { PrismaClient } from '../generated/prisma/client';
 
 // Instantiate the Prisma Client database connection wrapper
-const prisma = new PrismaClient();
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL is required before running the Prisma seed.');
+}
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: databaseUrl }),
+});
 // Set bcrypt cost factor (rounds) for password hashing difficulty
 const BCRYPT_COST = 12;
 // The placeholder password configured in env.example that MUST be changed for security
