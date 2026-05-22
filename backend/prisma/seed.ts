@@ -1,3 +1,4 @@
+import 'dotenv/config';
 // Import bcryptjs for secure password hashing before storing in database
 import { hash } from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
